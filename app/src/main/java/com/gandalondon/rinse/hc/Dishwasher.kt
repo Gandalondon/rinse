@@ -43,7 +43,7 @@ class Dishwasher(private val store: Store) {
         val status = statusMap()
         val op = status["BSH.Common.Status.OperationState"]?.toString()?.substringAfterLast('.') ?: "Ready"
         return when (op) {
-            "Run", "DelayedStart", "Pause" -> { status = op; running() }
+            "Run", "DelayedStart", "Pause" -> { opState = op; running() }
             "Finished" -> {
                 val prev = store.snapshot
                 val endAt = if (prev.phase == Phase.Done || prev.phase == Phase.Running) prev.endAt.coerceAtMost(now())
@@ -57,7 +57,7 @@ class Dishwasher(private val store: Store) {
         }
     }
 
-    private var status = ""
+    private var opState = ""
 
     private fun running(): Snapshot {
         val active = api.get("$ha/programs/active").getJSONObject("data")
@@ -74,7 +74,7 @@ class Dishwasher(private val store: Store) {
 
         val minutes = (store.minutes(key) ?: 120) * 60_000L
         // Waiting for cheap energy: starts later, ends a programme-length after that.
-        val delayed = status == "DelayedStart"
+        val delayed = opState == "DelayedStart"
         val prev = store.snapshot
         val startAt = when {
             delayed && startIn > 0 -> now() + startIn * 1000
