@@ -23,6 +23,9 @@ Lights out, dishwasher on.
 - Everything else: 08 settings, 05 top-up before bed
 - Widget: 09 one row, 10 tall
 
+## Widgets
+- rinse_widgets.png: widget states plus app icon, scaled up, on Fog. Run python3 tools/portfolio/widgets.py <roboto woff2>. Widgets use Roboto, as on the phone.
+
 ## In the phone (same workflow as Relay and Sniff)
 Run python3 tools/portfolio/phones.py. Uses Tony's Pixel 8 frame (pixel8-frame@2x.png, from Figma) on the 3560 x 1717 canvas.
 - rinse_app.png: four phones, transparent (night start, washing, clean, door open)
