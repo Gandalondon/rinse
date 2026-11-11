@@ -156,10 +156,6 @@ private fun ColumnScope.SettingsScreen(vm: RinseViewModel, ui: Ui, p: Palette) {
             }
             Box(Modifier.fillMaxWidth().height(1.dp).background(p.line))
         }
-        Text(
-            "Unlink ${Rinse.store(c).haName}", style = Type.Body, color = p.muted,
-            modifier = Modifier.padding(top = 32.dp).clickable { vm.signOut() }.padding(vertical = 8.dp),
-        )
     }
 }
 

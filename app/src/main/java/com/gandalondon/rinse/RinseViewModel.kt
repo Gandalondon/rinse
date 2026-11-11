@@ -87,12 +87,6 @@ class RinseViewModel(app: Application) : AndroidViewModel(app) {
         Rinse.publish(c, store.snapshot)
     }
 
-    fun signOut() {
-        store.signOut()
-        _ui.value = Ui(Snapshot(Phase.Unlinked))
-        Rinse.publish(c, store.snapshot)
-    }
-
     // --- Linking Ran (Home Connect Device Flow) ---
 
     /** Gets a code, then waits for it to be approved in the browser. [openBrowser] gets the Bosch page. */
