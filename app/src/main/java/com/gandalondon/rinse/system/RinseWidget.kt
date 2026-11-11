@@ -55,9 +55,11 @@ class RinseWidget : AppWidgetProvider() {
                 val views = RemoteViews(c.packageName, if (oneRow) R.layout.widget_row else R.layout.widget).apply {
                     setInt(R.id.root, "setBackgroundResource", bg)
                     setInt(R.id.icon, "setColorFilter", fg)
+                    // Two sizes only: big for a one-word statement (Clean.), one smaller size for everything else.
+                    val oneWord = !big.trim().contains(' ')
                     setImageViewBitmap(R.id.big,
-                        if (oneRow) text(c, big, fg, w - 32 - 28 - 12, h, maxSp = 18f, minSp = 11f, lines = 2, bottom = false)
-                        else text(c, big, fg, w - 32, h - 32 - 32 - 8, maxSp = 28f, minSp = 14f, lines = 4, bottom = true))
+                        if (oneRow) text(c, big, fg, w - 32 - 28 - 12, h, maxSp = if (oneWord) 18f else 14f, minSp = 14f, lines = 2, bottom = false)
+                        else text(c, big, fg, w - 32, h - 32 - 32 - 8, maxSp = if (oneWord) 28f else 20f, minSp = 20f, lines = 4, bottom = true))
                     setContentDescription(R.id.big, big)
                     setOnClickPendingIntent(R.id.root, tapIntent(c, snap))
                 }
@@ -65,7 +67,7 @@ class RinseWidget : AppWidgetProvider() {
             }
         }
 
-        /** The statement in Geist Medium, shrunk until it fits, like the old auto-sizing text. */
+        /** The statement in Geist Medium at one of two sizes (it only drops to the smaller size if the big one will not fit). */
         private fun text(c: Context, s: String, color: Int, wDp: Int, hDp: Int, maxSp: Float, minSp: Float, lines: Int, bottom: Boolean): Bitmap {
             val d = c.resources.displayMetrics
             val w = (wDp.coerceAtLeast(20) * d.density).toInt()
