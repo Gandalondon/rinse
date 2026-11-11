@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The statement is drawn as an image in Geist, since widgets cannot load app fonts. -->
 <!-- Two rows or more: the plate top left, the statement sitting at the bottom. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
@@ -15,20 +16,12 @@
         android:contentDescription="@null"
         android:src="@drawable/ic_plate" />
 
-    <TextView
+    <ImageView
         android:id="@+id/big"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_weight="1"
-        android:autoSizeMaxTextSize="28sp"
-        android:autoSizeMinTextSize="14sp"
-        android:autoSizeTextType="uniform"
-        android:fontFamily="sans-serif-medium"
-        android:gravity="bottom|start"
-        android:includeFontPadding="false"
-        android:maxLines="4"
-        android:text="Tap to start Eco 50."
-        android:textColor="@color/paper"
-        android:textSize="28sp" />
+        android:contentDescription="@null"
+        android:scaleType="fitCenter" />
 </LinearLayout>
