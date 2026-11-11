@@ -40,7 +40,14 @@ jobs:
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           HC_CLIENT_ID: ${{ secrets.HC_CLIENT_ID }}
           HC_CLIENT_SECRET: ${{ secrets.HC_CLIENT_SECRET }}
-        run: gradle :app:assembleRelease --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          gradle :app:assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log
+
+      # Surface compile errors as annotations, readable without opening the log.
+      - name: Report errors
+        if: failure()
+        run: grep -E "^e: |error:|What went wrong" -A3 build.log | head -40 | sed 's/^/::error::/' || true
 
       - name: Name the APK
         run: cp app/build/outputs/apk/release/app-release.apk Rinse.apk
