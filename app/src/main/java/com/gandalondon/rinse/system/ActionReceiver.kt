@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-/** Starts the wash from the widget or the quick settings tile, without opening the app. */
+/** Starts the wash from the widget, without opening the app. */
 class ActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(c: Context, intent: Intent) {

@@ -4,7 +4,6 @@ A one-tap Android app for a Bosch dishwasher on Home Connect. Every night it sta
 
 - **App:** one screen. Black at night, White when the dishes are clean, Brick when it cannot start (door open, remote start off, dishwasher offline).
 - **Widget:** the same states on the home screen. Tap it to start tonight's wash.
-- **Quick settings tile:** pull down, tap Rinse, done.
 - **Notification:** a silent notification when the wash finishes (Clean. Add salt.), waiting for you in the morning.
 - **Tonight:** the cog picks a different programme for one night. Back to Eco 50 the next day.
 
@@ -33,4 +32,4 @@ Home Connect only announces these live, as a wash ends. Rinse wakes six minutes 
 
 ## Copy rule
 
-Every screen, the widget, the tile and the notification lead with one statement and nothing in small print: Clean. / Clean. Add salt. / Washing, done at 05:10. / Door open. Close it, then try again.
+Every screen, the widget and the notification lead with one statement and nothing in small print: Clean. / Clean. Add salt. / Washing, done at 05:10. / Door open. Close it, then try again.

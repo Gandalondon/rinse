@@ -5,7 +5,6 @@ import com.gandalondon.rinse.hc.Dishwasher
 import com.gandalondon.rinse.hc.Upkeep
 import com.gandalondon.rinse.system.CheckWorker
 import com.gandalondon.rinse.system.Notify
-import com.gandalondon.rinse.system.RinseTile
 import com.gandalondon.rinse.system.RinseWidget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,7 +12,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** One shared store and dishwasher, plus the step that pushes every change to the widget, tile and notifications. */
+/** One shared store and dishwasher, plus the step that pushes every change to the widget and notifications. */
 object Rinse {
     @Volatile private var store: Store? = null
     @Volatile private var dw: Dishwasher? = null
@@ -40,7 +39,6 @@ object Rinse {
 
     fun publish(c: Context, snap: Snapshot, schedule: Boolean = true) {
         RinseWidget.updateAll(c, snap)
-        RinseTile.requestUpdate(c)
         when (snap.phase) {
             Phase.Running -> if (schedule) CheckWorker.scheduleFor(c, snap.endAt)
             Phase.Done -> {
