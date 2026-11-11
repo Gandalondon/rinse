@@ -1,5 +1,6 @@
 package com.gandalondon.rinse.hc
 
+import com.gandalondon.rinse.CheapEnergy
 import com.gandalondon.rinse.Phase
 import com.gandalondon.rinse.Programs
 import com.gandalondon.rinse.Snapshot
