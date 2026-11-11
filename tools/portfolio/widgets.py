@@ -1,10 +1,10 @@
 """Rinse widgets, scaled up, with the app icon, on the 3560 x 1717 portfolio canvas.
-Run: python3 tools/portfolio/widgets.py <path to roboto-latin-500-normal.woff2>
-Writes design/portfolio/rinse_widgets.png. Widgets use Roboto Medium, as on the phone (Android widgets use the system font)."""
+Run: python3 tools/portfolio/widgets.py
+Writes design/portfolio/rinse_widgets.png. Widgets use Geist Medium, as on the phone."""
 import os, sys, asyncio
 from playwright.async_api import async_playwright
 D = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../design/portfolio"))
-ROBOTO = sys.argv[1]
+GEIST = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../app/src/main/res/font/geist_medium.ttf"))
 INK, PAPER, BRICK, FOG = "#1A1A1A", "#FFFFFF", "#7A1E1E", "#F1F1F1"
 K = 2.2  # widget scale against its real dp size
 def plate(c, s): return f'<svg width="{s}" height="{s}" viewBox="0 0 24 24"><path fill="{c}" d="M3,16 A9,9 0 0 1 21,16 Z"/></svg>'
@@ -18,7 +18,7 @@ CELL, GAP = 164 * K, 48
 WIDE = (4 * CELL + 3 * GAP - GAP) / 2
 icon = (f'<svg width="{CELL}" height="{CELL}" viewBox="0 0 120 120"><rect width="120" height="120" rx="27" fill="{INK}"/>'
         f'<path d="M28 72 A32 32 0 0 1 92 72 Z" fill="{PAPER}"/></svg>')
-html = f'''<html><head><style>@font-face{{font-family:R;src:url(file://{ROBOTO});font-weight:500}}
+html = f'''<html><head><style>@font-face{{font-family:R;src:url(file://{GEIST});font-weight:500}}
 *{{margin:0;box-sizing:border-box}}body{{width:1780px;height:858px;background:{FOG};display:flex;align-items:center;justify-content:center;font-family:R;font-weight:500;-webkit-font-smoothing:antialiased}}
 .g{{display:flex;flex-direction:column;gap:{GAP}px}}.r{{display:flex;gap:{GAP}px}}.w{{display:flex;border-radius:{24*K}px;text-wrap:balance}}</style></head><body>
 <div class="g"><div class="r">{icon}{tall(INK, PAPER, "Tap to start Eco 50.")}{tall(PAPER, INK, "Clean.")}{tall(BRICK, PAPER, "Door open. Close it, then try again.", 20)}</div>
