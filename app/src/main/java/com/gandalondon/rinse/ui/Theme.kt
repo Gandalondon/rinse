@@ -2,9 +2,12 @@ package com.gandalondon.rinse.ui
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.sp
+import com.gandalondon.rinse.R
 import com.gandalondon.rinse.Phase
 
 // Same ink and paper as Hugin. Colour carries the state, so there is no light or dark theme.
@@ -25,9 +28,17 @@ fun paletteFor(phase: Phase) = when (phase) {
     else -> Night
 }
 
+// Geist (SIL Open Font License), bundled so the app looks the same on every phone.
+val Geist = FontFamily(
+    Font(R.font.geist_regular, FontWeight.Normal),
+    Font(R.font.geist_medium, FontWeight.Medium),
+    Font(R.font.geist_semibold, FontWeight.SemiBold),
+)
+
 // Two sizes: one heading, one for everything else. Same scale as Hugin.
 object Type {
     val Hero = TextStyle(
+        fontFamily = Geist,
         fontSize = 48.sp,
         lineHeight = 56.sp,
         fontWeight = FontWeight.SemiBold,
@@ -35,10 +46,11 @@ object Type {
         lineBreak = LineBreak.Heading, // balanced lines, no widows
     )
     val Body = TextStyle(
+        fontFamily = Geist,
         fontSize = 17.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.sp,
         lineBreak = LineBreak.Paragraph, // avoids a lone last word
     )
-    val Button = TextStyle(fontSize = 17.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.sp)
+    val Button = TextStyle(fontFamily = Geist, fontSize = 17.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.sp)
 }
