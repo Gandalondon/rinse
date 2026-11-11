@@ -28,8 +28,8 @@ fun paletteFor(phase: Phase) = when (phase) {
 // Two sizes: one heading, one for everything else. Same scale as Hugin.
 object Type {
     val Hero = TextStyle(
-        fontSize = 56.sp,
-        lineHeight = 64.sp,
+        fontSize = 48.sp,
+        lineHeight = 56.sp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.sp,
         lineBreak = LineBreak.Heading, // balanced lines, no widows

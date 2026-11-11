@@ -65,6 +65,11 @@ class Store(context: Context) {
         get() = p.getLong("notifiedEnd", 0)
         set(v) = p.edit().putLong("notifiedEnd", v).apply()
 
+    /** Upkeep alerts heard from the dishwasher (event keys). */
+    var upkeep: Set<String>
+        get() = p.getStringSet("upkeep", emptySet()) ?: emptySet()
+        set(v) = p.edit().putStringSet("upkeep", HashSet(v)).apply()
+
     /** Learned programme lengths in minutes, keyed by programme. */
     fun minutes(key: String): Int? =
         p.getInt("min_$key", 0).takeIf { it > 0 } ?: Programs.defaultMinutes(key)

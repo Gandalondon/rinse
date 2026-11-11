@@ -40,8 +40,8 @@ class RinseTile : TileService() {
             Phase.Idle -> "Start ${Programs.name(Rinse.store(this).program)}"
             Phase.Starting -> "Starting"
             Phase.Running -> "Done at ${Rinse.time(snap.endAt)}"
-            Phase.Done -> "Clean"
-            Phase.Blocked -> snap.head
+            Phase.Done -> Rinse.statement(this, snap).removeSuffix(".")
+            Phase.Blocked -> snap.head.substringBefore(". ").removeSuffix(".")
         }
         tile.state = when (snap.phase) {
             Phase.Running, Phase.Starting -> Tile.STATE_ACTIVE

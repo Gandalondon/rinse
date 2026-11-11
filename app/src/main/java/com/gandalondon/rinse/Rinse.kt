@@ -2,6 +2,7 @@ package com.gandalondon.rinse
 
 import android.content.Context
 import com.gandalondon.rinse.hc.Dishwasher
+import com.gandalondon.rinse.hc.Upkeep
 import com.gandalondon.rinse.system.CheckWorker
 import com.gandalondon.rinse.system.Notify
 import com.gandalondon.rinse.system.RinseTile
@@ -20,25 +21,28 @@ object Rinse {
     fun store(c: Context): Store = store ?: synchronized(this) { store ?: Store(c).also { store = it } }
     fun dishwasher(c: Context): Dishwasher = dw ?: synchronized(this) { dw ?: Dishwasher(store(c)).also { dw = it } }
 
-    suspend fun refresh(c: Context): Snapshot = withContext(Dispatchers.IO) { dishwasher(c).refresh() }.also { publish(c, it) }
+    /** [schedule] false: do not touch the background check (used by the check itself). */
+    suspend fun refresh(c: Context, schedule: Boolean = true): Snapshot =
+        withContext(Dispatchers.IO) { dishwasher(c).refresh() }.also { publish(c, it, schedule) }
 
     /** [fromOutside] is true for the widget and tile: problems then also arrive as a notification. */
     suspend fun start(c: Context, fromOutside: Boolean = false): Snapshot {
         store(c).snapshot = store(c).snapshot.copy(phase = Phase.Starting, programKey = store(c).program)
         publish(c, store(c).snapshot)
         val snap = withContext(Dispatchers.IO) { dishwasher(c).start() }
-        publish(c, snap)
+        publish(c, snap, schedule = false)
+        if (snap.phase == Phase.Running) CheckWorker.scheduleFor(c, snap.endAt, replace = true)
         if (fromOutside && snap.phase == Phase.Blocked) Notify.problem(c, snap)
         return snap
     }
 
     suspend fun stop(c: Context): Snapshot = withContext(Dispatchers.IO) { dishwasher(c).stop() }.also { publish(c, it) }
 
-    fun publish(c: Context, snap: Snapshot) {
+    fun publish(c: Context, snap: Snapshot, schedule: Boolean = true) {
         RinseWidget.updateAll(c, snap)
         RinseTile.requestUpdate(c)
         when (snap.phase) {
-            Phase.Running -> CheckWorker.scheduleFor(c, snap.endAt)
+            Phase.Running -> if (schedule) CheckWorker.scheduleFor(c, snap.endAt)
             Phase.Done -> {
                 val s = store(c)
                 if (s.notifiedEnd != snap.endAt) {
@@ -46,8 +50,30 @@ object Rinse {
                     Notify.clean(c, snap)
                 }
             }
-            Phase.Idle -> Notify.clear(c)
+            // Unloaded: drop the Clean notification, unless it still says what to top up.
+            Phase.Idle -> Notify.clear(c, keepDone = store(c).upkeep.isNotEmpty())
             else -> {}
+        }
+    }
+
+    /** The one sentence each screen leads with. No small print. */
+    fun statement(c: Context, snap: Snapshot, widget: Boolean = false): String {
+        val s = store(c)
+        val up = Upkeep.phrase(s.upkeep)
+        val prog = Programs.name(s.program)
+        return when (snap.phase) {
+            Phase.Unlinked -> "Link your dishwasher."
+            Phase.Idle -> when {
+                up != null && widget -> "$up, then tap to start."
+                up != null -> "$up, then start $prog."
+                widget -> "Tap to start $prog."
+                else -> s.minutes(s.program)?.let { "$prog, done by ${time(System.currentTimeMillis() + it * 60_000L)}." }
+                    ?: "$prog tonight."
+            }
+            Phase.Starting -> "Starting ${Programs.name(snap.programKey)}."
+            Phase.Running -> "Washing, done at ${time(snap.endAt)}."
+            Phase.Done -> if (up != null) "Clean. $up." else "Clean."
+            Phase.Blocked -> snap.head
         }
     }
 

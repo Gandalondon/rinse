@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -35,8 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gandalondon.rinse.Phase
 import com.gandalondon.rinse.Programs
@@ -73,14 +74,13 @@ fun RinseApp(vm: RinseViewModel, ui: Ui, openUrl: (String) -> Unit) {
     }
 }
 
-// --- Screens ---
+// --- Screens: one statement at the top, nothing in small print ---
 
 @Composable
 private fun ColumnScope.Idle(vm: RinseViewModel, ui: Ui, p: Palette) {
-    val c = androidx.compose.ui.platform.LocalContext.current
-    val key = Rinse.store(c).program
-    Heading(Programs.name(key), p, icon = Icons.Filled.Settings, iconLabel = "Tonight's programme", onIcon = vm::openSettings)
-    Body(Rinse.doneAt(c, key) ?: "Ready", p.muted)
+    val c = LocalContext.current
+    Heading(Rinse.statement(c, ui.snap.copy(phase = Phase.Idle)), p,
+        icon = Icons.Filled.Settings, iconLabel = "Tonight's programme", onIcon = vm::openSettings)
     Spacer(Modifier.weight(1f))
     val starting = ui.busy || ui.snap.phase == Phase.Starting
     Pill(if (starting) "Starting" else "Start", p, filled = true, onClick = vm::start)
@@ -88,13 +88,13 @@ private fun ColumnScope.Idle(vm: RinseViewModel, ui: Ui, p: Palette) {
 
 @Composable
 private fun ColumnScope.Running(vm: RinseViewModel, ui: Ui, p: Palette) {
+    val c = LocalContext.current
     val s = ui.snap
-    Heading(Rinse.time(s.endAt), p)
-    Body("${Programs.name(s.programKey)}, ${Rinse.left(s)}", p.muted)
-    val start = s.endAt - ((Rinse.store(androidx.compose.ui.platform.LocalContext.current).minutes(s.programKey) ?: 120) * 60_000L)
+    Heading(Rinse.statement(c, s), p)
+    val start = s.endAt - ((Rinse.store(c).minutes(s.programKey) ?: 120) * 60_000L)
     val fraction = if (s.progress > 0) s.progress / 100f
     else ((ui.clock - start).toFloat() / (s.endAt - start).coerceAtLeast(1)).coerceIn(0f, 1f)
-    Box(Modifier.padding(top = 24.dp).fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)).background(p.line)) {
+    Box(Modifier.padding(top = 32.dp).fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)).background(p.line)) {
         Box(Modifier.fillMaxHeight().fillMaxWidth(fraction).background(p.fg))
     }
     Spacer(Modifier.weight(1f))
@@ -110,49 +110,46 @@ private fun ColumnScope.Running(vm: RinseViewModel, ui: Ui, p: Palette) {
 
 @Composable
 private fun ColumnScope.DoneScreen(ui: Ui, p: Palette) {
-    Heading("Clean", p)
-    Body("Finished at ${Rinse.time(ui.snap.endAt)}", p.muted)
+    Heading(Rinse.statement(LocalContext.current, ui.snap), p)
 }
 
 @Composable
 private fun ColumnScope.Blocked(vm: RinseViewModel, ui: Ui, p: Palette) {
     Heading(ui.snap.head, p)
-    Body(ui.snap.body, p.muted)
     Spacer(Modifier.weight(1f))
     Pill(if (ui.busy) "Checking" else "Try again", p, filled = true, onClick = vm::retry)
 }
 
 @Composable
 private fun ColumnScope.Unlinked(vm: RinseViewModel, ui: Ui, p: Palette, openUrl: (String) -> Unit) {
-    Heading("Link your dishwasher", p)
-    Body("Sign in to Home Connect once, with the account you use in the Bosch app.", p.muted)
+    Heading("Link your dishwasher.", p)
     Spacer(Modifier.weight(1f))
-    Pill(if (ui.busy) "Opening" else "Sign in", p, filled = true, onClick = { vm.signIn(openUrl) })
+    Pill(if (ui.busy) "Opening" else "Sign in with Bosch", p, filled = true, onClick = { vm.signIn(openUrl) })
 }
 
 @Composable
 private fun ColumnScope.SignInCode(vm: RinseViewModel, ui: Ui, p: Palette, openUrl: (String) -> Unit) {
     val code = ui.signIn ?: return
-    Heading(code.userCode, p, icon = Icons.Filled.Close, iconLabel = "Cancel", onIcon = vm::cancelSignIn)
-    Body("Approve Rinse on the Bosch page. If it asks for a code, use this one. Rinse carries on by itself.", p.muted)
+    Heading("Approve Rinse on the Bosch page. Code ${code.userCode}.", p,
+        icon = Icons.Filled.Close, iconLabel = "Cancel", onIcon = vm::cancelSignIn)
     Spacer(Modifier.weight(1f))
     Pill("Open the Bosch page", p, filled = false, onClick = { openUrl(code.verifyUrl) })
 }
 
 @Composable
 private fun ColumnScope.SettingsScreen(vm: RinseViewModel, ui: Ui, p: Palette) {
-    val c = androidx.compose.ui.platform.LocalContext.current
-    Heading("Tonight", p, icon = Icons.Filled.Close, iconLabel = "Close", onIcon = vm::closeSettings)
-    Body("Back to Eco 50 tomorrow", p.muted)
+    val c = LocalContext.current
+    Heading("Tonight only.", p, icon = Icons.Filled.Close, iconLabel = "Close", onIcon = vm::closeSettings)
     Column(Modifier.padding(top = 32.dp).weight(1f).verticalScroll(rememberScrollState())) {
         val current = Rinse.store(c).program
         for (key in ui.programs.ifEmpty { listOf(Programs.ECO50) }) {
             Row(
                 Modifier.fillMaxWidth().clickable { vm.pick(key) }.padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(Programs.name(key), style = Type.Body, color = p.fg)
-                if (key == current) Text("Tonight", style = Type.Body, color = p.muted)
+                if (key == current) Icon(Icons.Filled.Check, contentDescription = "Tonight", tint = p.fg, modifier = Modifier.size(24.dp))
             }
             Box(Modifier.fillMaxWidth().height(1.dp).background(p.line))
         }
@@ -174,11 +171,6 @@ private fun Heading(text: String, p: Palette, icon: ImageVector? = null, iconLab
             }
         }
     }
-}
-
-@Composable
-private fun Body(text: String, color: Color) {
-    Text(text, style = Type.Body, color = color, modifier = Modifier.padding(top = 16.dp))
 }
 
 @Composable

@@ -98,7 +98,7 @@ class RinseViewModel(app: Application) : AndroidViewModel(app) {
                 withContext(Dispatchers.IO) { Rinse.dishwasher(c).api.startSignIn() }
             } catch (e: Exception) {
                 _ui.value = _ui.value.copy(busy = false, snap = Snapshot(Phase.Blocked,
-                    head = "Can’t reach Bosch", body = "Check your phone is online, then try again"))
+                    head = "Can’t reach Bosch. Check your phone is online."))
                 return@launch
             }
             _ui.value = _ui.value.copy(busy = false, signIn = code)

@@ -35,14 +35,13 @@ object Notify {
     )
 
     @SuppressLint("MissingPermission")
-    private fun post(c: Context, id: Int, channel: String, title: String, text: String, silent: Boolean) {
+    private fun post(c: Context, id: Int, channel: String, title: String, silent: Boolean) {
         val nm = NotificationManagerCompat.from(c)
         if (!nm.areNotificationsEnabled()) return
         channels(c)
         nm.notify(id, NotificationCompat.Builder(c, channel)
             .setSmallIcon(R.drawable.ic_plate)
             .setContentTitle(title)
-            .setContentText(text)
             .setContentIntent(open(c))
             .setAutoCancel(true)
             .setSilent(silent)
@@ -50,13 +49,13 @@ object Notify {
     }
 
     fun clean(c: Context, snap: Snapshot) =
-        post(c, ID_DONE, DONE, "Clean", "Finished at ${Rinse.time(snap.endAt)}", silent = true)
+        post(c, ID_DONE, DONE, Rinse.statement(c, snap), silent = true)
 
     fun problem(c: Context, snap: Snapshot) =
-        post(c, ID_PROBLEM, PROBLEM, snap.head, snap.body, silent = false)
+        post(c, ID_PROBLEM, PROBLEM, snap.head, silent = false)
 
-    fun clear(c: Context) {
-        NotificationManagerCompat.from(c).cancel(ID_DONE)
+    fun clear(c: Context, keepDone: Boolean = false) {
+        if (!keepDone) NotificationManagerCompat.from(c).cancel(ID_DONE)
         NotificationManagerCompat.from(c).cancel(ID_PROBLEM)
     }
 }

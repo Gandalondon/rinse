@@ -51,7 +51,7 @@ class Dishwasher(private val store: Store) {
                 Snapshot(Phase.Done, prev.programKey, endAt = endAt)
             }
             "ActionRequired", "Error" -> Snapshot(
-                Phase.Blocked, head = "${store.haName} needs you", body = "Check the display on the dishwasher",
+                Phase.Blocked, head = "${store.haName} needs you. Check its display.",
             )
             else -> Snapshot(Phase.Idle, store.program)
         }
@@ -139,8 +139,8 @@ class Dishwasher(private val store: Store) {
     } catch (e: HcError) {
         fromError(e)
     } catch (e: Exception) {
-        if (HomeConnect.isNetwork(e)) Snapshot(Phase.Blocked, head = "No connection", body = "Check your phone is online, then try again")
-        else Snapshot(Phase.Blocked, head = "Something went wrong", body = e.message ?: "Try again")
+        if (HomeConnect.isNetwork(e)) Snapshot(Phase.Blocked, head = "No connection. Check your phone is online.")
+        else Snapshot(Phase.Blocked, head = "Something went wrong. Try again.")
     }
 
     private fun fromError(e: HcError): Snapshot {
@@ -149,14 +149,14 @@ class Dishwasher(private val store: Store) {
             "door" in k -> doorOpen()
             "remotestart" in k || "remotecontrol" in k -> remoteOff()
             "connection" in k || "offline" in k || "disconnected" in k -> offline()
-            e.code == 429 -> Snapshot(Phase.Blocked, head = "Too many tries", body = "Bosch limits requests. Wait a minute, then try again")
-            else -> Snapshot(Phase.Blocked, head = "${store.haName} said no", body = e.message)
+            e.code == 429 -> Snapshot(Phase.Blocked, head = "Too many tries. Wait a minute.")
+            else -> Snapshot(Phase.Blocked, head = "${store.haName} said no. ${e.message.trimEnd('.')}.")
         }
     }
 
-    private fun doorOpen() = Snapshot(Phase.Blocked, head = "Door open", body = "Close the door, then try again", retryStart = true)
-    private fun remoteOff() = Snapshot(Phase.Blocked, head = "Remote start is off", body = "Press remote start on ${store.haName}, then try again", retryStart = true)
-    private fun offline() = Snapshot(Phase.Blocked, head = "Can’t reach ${store.haName}", body = "Check it is switched on and connected to Wi-Fi")
-    private fun noDishwasher() = Snapshot(Phase.Blocked, head = "No dishwasher", body = "None found on this Home Connect account")
+    private fun doorOpen() = Snapshot(Phase.Blocked, head = "Door open. Close it, then try again.", retryStart = true)
+    private fun remoteOff() = Snapshot(Phase.Blocked, head = "Remote start is off. Turn it on at ${store.haName}, then try again.", retryStart = true)
+    private fun offline() = Snapshot(Phase.Blocked, head = "Can’t reach ${store.haName}. Check it is on and online.")
+    private fun noDishwasher() = Snapshot(Phase.Blocked, head = "No dishwasher on this Bosch account.")
     private fun now() = System.currentTimeMillis()
 }

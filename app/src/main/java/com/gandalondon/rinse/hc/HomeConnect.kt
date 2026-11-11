@@ -100,6 +100,8 @@ class HomeConnect(private val store: Store) {
         }
     }
 
+    fun freshToken(): String = token()
+
     private fun token(): String {
         if (store.accessToken == null) throw SignedOut()
         if (System.currentTimeMillis() > store.tokenExpiresAt) refresh()
