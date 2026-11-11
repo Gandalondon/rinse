@@ -65,11 +65,18 @@ object Rinse {
                 up != null && widget -> "$up, then tap to start."
                 up != null -> "$up, then start $prog."
                 widget -> "Tap to start $prog."
-                else -> s.minutes(s.program)?.let { "$prog, done by ${time(System.currentTimeMillis() + it * 60_000L)}." }
-                    ?: "$prog tonight."
+                else -> {
+                    val delay = CheapEnergy.delaySeconds() * 1000
+                    val start = System.currentTimeMillis() + delay
+                    s.minutes(s.program)?.let { m ->
+                        val done = time(start + m * 60_000L)
+                        if (delay > 0) "$prog, starts ${time(start)}, done by $done." else "$prog, done by $done."
+                    } ?: if (delay > 0) "$prog, starts ${time(start)}." else "$prog tonight."
+                }
             }
             Phase.Starting -> "Starting ${Programs.name(snap.programKey)}."
-            Phase.Running -> "Washing, done at ${time(snap.endAt)}."
+            Phase.Running -> if (snap.startAt > System.currentTimeMillis()) "Waiting, starts at ${time(snap.startAt)}."
+                else "Washing, done at ${time(snap.endAt)}."
             Phase.Done -> if (up != null) "Clean. $up." else "Clean."
             Phase.Blocked -> snap.head
         }

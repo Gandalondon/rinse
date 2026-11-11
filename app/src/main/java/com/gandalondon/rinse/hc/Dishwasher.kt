@@ -43,7 +43,7 @@ class Dishwasher(private val store: Store) {
         val status = statusMap()
         val op = status["BSH.Common.Status.OperationState"]?.toString()?.substringAfterLast('.') ?: "Ready"
         return when (op) {
-            "Run", "DelayedStart", "Pause" -> running()
+            "Run", "DelayedStart", "Pause" -> { status = op; running() }
             "Finished" -> {
                 val prev = store.snapshot
                 val endAt = if (prev.phase == Phase.Done || prev.phase == Phase.Running) prev.endAt.coerceAtMost(now())
@@ -57,11 +57,14 @@ class Dishwasher(private val store: Store) {
         }
     }
 
+    private var status = ""
+
     private fun running(): Snapshot {
         val active = api.get("$ha/programs/active").getJSONObject("data")
         val key = active.optString("key").ifEmpty { store.snapshot.programKey }
         val opts = options(active.optJSONArray("options"))
         val remaining = (opts["BSH.Common.Option.RemainingProgramTime"] as? Number)?.toLong()
+        val startIn = (opts["BSH.Common.Option.StartInRelative"] as? Number)?.toLong() ?: 0
         val progress = (opts["BSH.Common.Option.ProgramProgress"] as? Number)?.toInt() ?: 0
         val total = (opts["BSH.Common.Option.EstimatedTotalProgramTime"] as? Number)?.toLong()
 
@@ -69,12 +72,22 @@ class Dishwasher(private val store: Store) {
         if (total != null) store.learnMinutes(key, (total / 60).toInt())
         else if (remaining != null && progress in 1..30) store.learnMinutes(key, (remaining / 60 / (1 - progress / 100.0)).toInt())
 
-        val endAt = when {
-            remaining != null -> now() + remaining * 1000
-            store.snapshot.phase == Phase.Running -> store.snapshot.endAt
-            else -> now() + (store.minutes(key) ?: 120) * 60_000L
+        val minutes = (store.minutes(key) ?: 120) * 60_000L
+        // Waiting for cheap energy: starts later, ends a programme-length after that.
+        val delayed = status == "DelayedStart"
+        val prev = store.snapshot
+        val startAt = when {
+            delayed && startIn > 0 -> now() + startIn * 1000
+            delayed && prev.startAt > now() -> prev.startAt
+            else -> 0
         }
-        return Snapshot(Phase.Running, key, endAt = endAt, progress = progress)
+        val endAt = when {
+            startAt > 0 -> startAt + minutes
+            remaining != null -> now() + remaining * 1000
+            prev.phase == Phase.Running -> prev.endAt
+            else -> now() + minutes
+        }
+        return Snapshot(Phase.Running, key, endAt = endAt, progress = if (delayed) 0 else progress, startAt = startAt)
     }
 
     /** Starts tonight's programme. Returns what happened, ready to show. */
@@ -97,10 +110,15 @@ class Dishwasher(private val store: Store) {
                 Thread.sleep(1500)
             } catch (_: HcError) { }
 
+            // Before 23:30 the dishwasher waits for cheap energy; inside the window it starts now.
+            val delay = CheapEnergy.delaySeconds()
+            val options = JSONArray()
+            if (delay > 0) options.put(JSONObject().put("key", "BSH.Common.Option.StartInRelative").put("value", delay).put("unit", "seconds"))
             api.put("$ha/programs/active", JSONObject().put("data",
-                JSONObject().put("key", key).put("options", JSONArray())))
+                JSONObject().put("key", key).put("options", options)))
             store.tonight = null
-            Snapshot(Phase.Running, key, endAt = now() + (store.minutes(key) ?: 120) * 60_000L)
+            val startAt = if (delay > 0) now() + delay * 1000 else 0
+            Snapshot(Phase.Running, key, endAt = (if (startAt > 0) startAt else now()) + (store.minutes(key) ?: 120) * 60_000L, startAt = startAt)
         }
         val result = if (snap.phase == Phase.Blocked) snap.copy(retryStart = true) else snap
         store.snapshot = result

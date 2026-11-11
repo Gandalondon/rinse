@@ -17,10 +17,11 @@ data class Snapshot(
     val head: String = "",        // Blocked: big word
     val body: String = "",        // Blocked: the fix
     val retryStart: Boolean = false, // Blocked: Try again re-tries the start
+    val startAt: Long = 0,        // Running: when a delayed start begins (cheap energy)
 ) {
     fun toJson(): String = JSONObject()
         .put("phase", phase.name).put("program", programKey).put("endAt", endAt)
-        .put("progress", progress).put("head", head).put("body", body).put("retry", retryStart)
+        .put("progress", progress).put("head", head).put("body", body).put("retry", retryStart).put("startAt", startAt)
         .toString()
 
     companion object {
@@ -29,7 +30,7 @@ data class Snapshot(
             Snapshot(
                 Phase.valueOf(j.getString("phase")), j.optString("program", Programs.ECO50),
                 j.optLong("endAt"), j.optInt("progress"), j.optString("head"), j.optString("body"),
-                j.optBoolean("retry"),
+                j.optBoolean("retry"), j.optLong("startAt"),
             )
         } catch (_: Exception) { null }
     }
@@ -101,6 +102,24 @@ class Store(context: Context) {
         c.set(java.util.Calendar.MINUTE, 0)
         c.set(java.util.Calendar.SECOND, 0)
         return c.timeInMillis
+    }
+}
+
+/** Cheap energy runs 23:30 to 05:30. Before 23:30 a start waits for it; inside it, a start is immediate. */
+object CheapEnergy {
+    private const val OPEN = 23 * 60 + 30
+    private const val CLOSE = 5 * 60 + 30
+
+    /** Seconds to wait before starting, or 0 to start now. */
+    fun delaySeconds(now: Long = System.currentTimeMillis()): Long {
+        val c = java.util.Calendar.getInstance().apply { timeInMillis = now }
+        val m = c.get(java.util.Calendar.HOUR_OF_DAY) * 60 + c.get(java.util.Calendar.MINUTE)
+        if (m >= OPEN || m < CLOSE) return 0
+        val open = (c.clone() as java.util.Calendar).apply {
+            set(java.util.Calendar.HOUR_OF_DAY, 23); set(java.util.Calendar.MINUTE, 30)
+            set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+        }
+        return (open.timeInMillis - now) / 1000
     }
 }
 
