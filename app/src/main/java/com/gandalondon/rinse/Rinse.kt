@@ -66,7 +66,7 @@ object Rinse {
                 up != null -> "$up, then start $prog."
                 widget -> "Tap to start $prog."
                 else -> {
-                    val delay = CheapEnergy.delaySeconds() * 1000
+                    val delay = if (s.program == Programs.ECO50) CheapEnergy.delaySeconds() * 1000 else 0
                     val start = System.currentTimeMillis() + delay
                     s.minutes(s.program)?.let { m ->
                         val done = time(start + m * 60_000L)

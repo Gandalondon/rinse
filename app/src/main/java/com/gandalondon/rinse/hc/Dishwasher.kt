@@ -111,7 +111,8 @@ class Dishwasher(private val store: Store) {
             } catch (_: HcError) { }
 
             // Before 23:30 the dishwasher waits for cheap energy; inside the window it starts now.
-            val delay = CheapEnergy.delaySeconds()
+            // Only the default Eco 50 waits; a one-off pick from the cog starts now.
+            val delay = if (key == Programs.ECO50) CheapEnergy.delaySeconds() else 0
             val options = JSONArray()
             if (delay > 0) options.put(JSONObject().put("key", "BSH.Common.Option.StartInRelative").put("value", delay).put("unit", "seconds"))
             api.put("$ha/programs/active", JSONObject().put("data",

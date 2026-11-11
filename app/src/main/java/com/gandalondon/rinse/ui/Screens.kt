@@ -132,7 +132,7 @@ private fun ColumnScope.SignInCode(vm: RinseViewModel, ui: Ui, p: Palette, openU
 @Composable
 private fun ColumnScope.SettingsScreen(vm: RinseViewModel, ui: Ui, p: Palette) {
     val c = LocalContext.current
-    Heading("Tonight only.", p, icon = Icons.Filled.Close, iconLabel = "Close", onIcon = vm::closeSettings)
+    Heading("Just this once.", p, icon = Icons.Filled.Close, iconLabel = "Close", onIcon = vm::closeSettings)
     Column(Modifier.padding(top = 32.dp).weight(1f).verticalScroll(rememberScrollState())) {
         val current = Rinse.store(c).program
         for (key in ui.programs.ifEmpty { listOf(Programs.ECO50) }) {
