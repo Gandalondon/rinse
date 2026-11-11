@@ -7,7 +7,8 @@ D = os.path.join(os.path.dirname(__file__), "../../design/portfolio")
 S, W, H, PW, STEP = 2, 3560, 1717, 837.457, 907.514   # from the Figma frame (1x)
 APP = ["01-night-start", "02-night-washing", "03-morning-clean", "06-error-door-open"]
 PAIRS = {"night": ["01-night-start", "02-night-washing"], "morning": ["03-morning-clean", "04-morning-clean-top-up"],
-         "fails": ["06-error-door-open", "07-error-no-connection"], "settings": ["05-night-top-up", "08-settings"]}
+         "fails": ["06-error-door-open", "07-error-no-connection"], "settings": ["05-night-top-up", "08-settings"],
+         "start-clean": ["01-night-start", "03-morning-clean"], "error-settings": ["06-error-door-open", "08-settings"]}
 frame = Image.open(os.path.join(D, "pixel8-frame@2x.png")).convert("RGBA")
 mask = ImageChops.multiply(frame.getchannel("R").point(lambda v: max(0, min(255, round((46 - v) / 20 * 255)))), frame.getchannel("A"))
 sx, sy, sw, sh = [round(v * S) for v in (44.077, 42.073, 751.307, 1626.830)]
