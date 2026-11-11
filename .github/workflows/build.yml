@@ -47,7 +47,8 @@ jobs:
       # Surface compile errors as annotations, readable without opening the log.
       - name: Report errors
         if: failure()
-        run: grep -E "^e: |error:|What went wrong" -A3 build.log | head -40 | sed 's/^/::error::/' || true
+        run: |
+          grep -E "^e: |error:|What went wrong" -A3 build.log | head -40 | sed 's/^/::error::/' || true
 
       - name: Name the APK
         run: cp app/build/outputs/apk/release/app-release.apk Rinse.apk
