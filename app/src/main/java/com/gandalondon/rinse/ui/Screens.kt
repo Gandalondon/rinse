@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -91,12 +90,6 @@ private fun ColumnScope.Running(vm: RinseViewModel, ui: Ui, p: Palette) {
     val c = LocalContext.current
     val s = ui.snap
     Heading(Rinse.statement(c, s), p)
-    val start = s.endAt - ((Rinse.store(c).minutes(s.programKey) ?: 120) * 60_000L)
-    val fraction = if (s.progress > 0) s.progress / 100f
-    else ((ui.clock - start).toFloat() / (s.endAt - start).coerceAtLeast(1)).coerceIn(0f, 1f)
-    Box(Modifier.padding(top = 32.dp).fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)).background(p.line)) {
-        Box(Modifier.fillMaxHeight().fillMaxWidth(fraction).background(p.fg))
-    }
     Spacer(Modifier.weight(1f))
 
     // Tap twice to stop, so a stray tap in the dark does not cancel the wash.
