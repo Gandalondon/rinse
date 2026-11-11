@@ -22,3 +22,8 @@ Lights out, dishwasher on.
 - When it fails: 06 door open, 07 no connection
 - Everything else: 08 settings, 05 top-up before bed
 - Widget: 09 one row, 10 tall
+
+## In the phone (same workflow as Relay and Sniff)
+Run python3 tools/portfolio/phones.py. Uses Tony's Pixel 8 frame (pixel8-frame@2x.png, from Figma) on the 3560 x 1717 canvas.
+- rinse_app.png: four phones, transparent (night start, washing, clean, door open)
+- rinse_pair-night / morning / fails / settings.jpg: two phones on white, for text then two phones
