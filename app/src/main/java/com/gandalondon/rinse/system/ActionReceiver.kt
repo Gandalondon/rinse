@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.gandalondon.rinse.Phase
 import com.gandalondon.rinse.Rinse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,9 @@ class ActionReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.Main).launch {
             try {
-                Rinse.start(c.applicationContext, fromOutside = true)
+                // Check the real state first: only start if Ran is genuinely ready.
+                val now = Rinse.refresh(c.applicationContext)
+                if (now.phase == Phase.Idle) Rinse.start(c.applicationContext, fromOutside = true)
             } finally {
                 pending.finish()
             }

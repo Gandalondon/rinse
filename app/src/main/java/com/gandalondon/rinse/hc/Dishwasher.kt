@@ -39,23 +39,37 @@ class Dishwasher(private val store: Store) {
     private fun read(): Snapshot {
         if (store.haId == null && !findDishwasher()) return noDishwasher()
         val appliance = api.get(ha).getJSONObject("data")
-        if (!appliance.optBoolean("connected", true)) return offline()
+        val prev = store.snapshot
+        // A wash we were tracking has ended and Ran has dropped off Wi-Fi: it is clean, not offline.
+        if (!appliance.optBoolean("connected", true)) {
+            return if (washEnded(prev)) done(prev) else offline()
+        }
 
         val status = statusMap()
         val op = status["BSH.Common.Status.OperationState"]?.toString()?.substringAfterLast('.') ?: "Ready"
+        val door = status["BSH.Common.Status.DoorState"]?.toString()?.substringAfterLast('.')
         return when (op) {
             "Run", "DelayedStart", "Pause" -> { opState = op; running() }
-            "Finished" -> {
-                val prev = store.snapshot
-                val endAt = if (prev.phase == Phase.Done || prev.phase == Phase.Running) prev.endAt.coerceAtMost(now())
-                else now()
-                Snapshot(Phase.Done, prev.programKey, endAt = endAt)
-            }
+            "Finished" -> if (door == "Open") Snapshot(Phase.Idle, store.program) else done(prev)
             "ActionRequired", "Error" -> Snapshot(
                 Phase.Blocked, head = "${store.haName} needs you. Check its display.",
             )
-            else -> Snapshot(Phase.Idle, store.program)
+            // Ran switches itself off after a wash. It stays Clean until the door is opened
+            // (unloading), so a stale Black widget can never start a second wash.
+            else -> if (washEnded(prev) && door != "Open") done(prev) else Snapshot(Phase.Idle, store.program)
         }
+    }
+
+    /** We were tracking a wash (or already showing Clean) that should be over by now. */
+    private fun washEnded(prev: Snapshot): Boolean = when (prev.phase) {
+        Phase.Done -> now() - prev.endAt < 20 * 3_600_000L          // Clean lasts until unloaded, at most 20 hours
+        Phase.Running -> now() > prev.endAt - 15 * 60_000L         // finishing or finished
+        else -> false
+    }
+
+    private fun done(prev: Snapshot): Snapshot {
+        val endAt = if (prev.phase == Phase.Done || prev.phase == Phase.Running) prev.endAt.coerceAtMost(now()) else now()
+        return Snapshot(Phase.Done, prev.programKey, endAt = endAt)
     }
 
     private var opState = ""
