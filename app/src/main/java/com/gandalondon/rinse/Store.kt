@@ -119,7 +119,9 @@ object CheapEnergy {
             set(java.util.Calendar.HOUR_OF_DAY, 23); set(java.util.Calendar.MINUTE, 30)
             set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
         }
-        return (open.timeInMillis - now) / 1000
+        // Round up to whole minutes so the start is never before 23:30 (and always reads 23:30).
+        val seconds = (open.timeInMillis - now + 999) / 1000
+        return (seconds + 59) / 60 * 60
     }
 }
 

@@ -82,7 +82,7 @@ object Rinse {
         }
     }
 
-    fun time(ms: Long): String = SimpleDateFormat("HH:mm", Locale.UK).format(Date(ms))
+    fun time(ms: Long): String = SimpleDateFormat("HH:mm", Locale.UK).format(Date(ms + 30_000)) // nearest minute
 
     fun duration(minutes: Long): String = "${minutes / 60} h ${(minutes % 60).toString().padStart(2, '0')}"
 
