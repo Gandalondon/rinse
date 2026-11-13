@@ -62,9 +62,20 @@ class Dishwasher(private val store: Store) {
 
     /** We were tracking a wash (or already showing Clean) that should be over by now. */
     private fun washEnded(prev: Snapshot): Boolean = when (prev.phase) {
-        Phase.Done -> now() - prev.endAt < 20 * 3_600_000L          // Clean lasts until unloaded, at most 20 hours
+        // Clean lasts until the door is seen open, or 18:00 that day at the latest (Ran often sleeps
+        // through the unloading, so the door is not always seen). A wash ending after 18:00 keeps 12 hours.
+        Phase.Done -> now() < cleanUntil(prev.endAt)
         Phase.Running -> now() > prev.endAt - 15 * 60_000L         // finishing or finished
         else -> false
+    }
+
+    private fun cleanUntil(endAt: Long): Long {
+        val c = java.util.Calendar.getInstance().apply {
+            timeInMillis = endAt
+            set(java.util.Calendar.HOUR_OF_DAY, 18); set(java.util.Calendar.MINUTE, 0)
+            set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+        }
+        return if (c.timeInMillis > endAt) c.timeInMillis else endAt + 12 * 3_600_000L
     }
 
     private fun done(prev: Snapshot): Snapshot {
