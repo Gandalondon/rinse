@@ -7,7 +7,7 @@ D = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../design/portfo
 GEIST = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../app/src/main/res/font/geist_medium.ttf"))
 INK, PAPER, BRICK, FOG = "#1A1A1A", "#FFFFFF", "#7A1E1E", "#F1F1F1"
 K = 2.2  # widget scale against its real dp size
-def plate(c, s): return f'<svg width="{s}" height="{s}" viewBox="0 0 24 24"><path fill="{c}" d="M3,16 A9,9 0 0 1 21,16 Z"/></svg>'
+def plate(c, s): return f'<svg width="{s}" height="{s}" viewBox="0 0 24 24"><path fill="{c}" d="M3,8 A9,9 0 0 0 21,8 Z"/></svg>'
 def tall(bg, fg, text, size=26):
     return (f'<div class="w" style="width:{164*K}px;height:{164*K}px;background:{bg};flex-direction:column;padding:{16*K}px">'
             f'{plate(fg, 32*K)}<div style="flex:1;display:flex;align-items:flex-end;margin-top:{8*K}px;font-size:{size*K}px;line-height:1.15;color:{fg}">{text}</div></div>')

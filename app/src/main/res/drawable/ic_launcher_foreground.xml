@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- White plate on black, sized to the adaptive icon's visible circle. -->
+<!-- White bowl on black (15 Nov: the dome turned over, so it no longer matches Hlid's hill), sized to the adaptive icon's visible circle. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#FFFFFFFF" android:pathData="M35,61 A19,19 0 0 1 73,61 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M35,47 A19,19 0 0 0 73,47 Z" />
 </vector>
