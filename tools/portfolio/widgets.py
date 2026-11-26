@@ -17,7 +17,7 @@ def row(bg, fg, text, w):
 CELL, GAP = 164 * K, 48
 WIDE = (4 * CELL + 3 * GAP - GAP) / 2
 icon = (f'<svg width="{CELL}" height="{CELL}" viewBox="0 0 120 120"><rect width="120" height="120" rx="27" fill="{INK}"/>'
-        f'<path d="M28 72 A32 32 0 0 1 92 72 Z" fill="{PAPER}"/></svg>')
+        f'<path d="M28 48 A32 32 0 0 0 92 48 Z" fill="{PAPER}"/></svg>')
 html = f'''<html><head><style>@font-face{{font-family:R;src:url(file://{GEIST});font-weight:500}}
 *{{margin:0;box-sizing:border-box}}body{{width:1780px;height:858px;background:{FOG};display:flex;align-items:center;justify-content:center;font-family:R;font-weight:500;-webkit-font-smoothing:antialiased}}
 .g{{display:flex;flex-direction:column;gap:{GAP}px}}.r{{display:flex;gap:{GAP}px}}.w{{display:flex;border-radius:{24*K}px;text-wrap:balance}}</style></head><body>
